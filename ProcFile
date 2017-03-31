@@ -1,1 +1,1 @@
-echo "web: python server/server.py"
+echo  "web: python server/server.py"
