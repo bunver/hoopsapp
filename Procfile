@@ -1,0 +1,1 @@
+echo  "web: python server/server.py"
