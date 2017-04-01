@@ -33,7 +33,7 @@ def hello():
     return "Hello World!"
 
 if __name__ == "__main__":
-    app.run("0.0.0.0", 33507)
+    app.run(port=33507)
 
 
 
