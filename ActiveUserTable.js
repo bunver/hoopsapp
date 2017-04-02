@@ -3,6 +3,8 @@
  */
 class ActiveUserTable {
     constructor(){
-        this.table = [];
+        this.activeUsers = {};
+        this.posts = {};
+        this.allUsers = {};
     }
 }
