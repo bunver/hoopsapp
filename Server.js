@@ -1,12 +1,7 @@
 /**
  * Created by JiaxinZhang on 4/2/2017.
  */
-// import "User";
-// import "Post";
-// import "ActiveUser";
-// import "ActiveUserTable";
-// import "Cluster";
-// import "Comment";
+
 
 var userTable = new ActiveUserTable();
 var postID = 0;
@@ -15,6 +10,7 @@ var usercounter = 0;
 // this function is for optics logics
 function optics(cluster){
     // TO DO: Implement Optics logics
+    cluster = OPTICS(cluster);
     return cluster;
 }
 

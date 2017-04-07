@@ -9,8 +9,8 @@ class ActiveUser{
         this.updateTime = updateTime;
         this.status = status;
         this.city = city;
-        this.token = token;
+        this.token = "";
         this.activeID = activeID;
-        this.clusterID = None
+        this.clusterID = null;
     }
 }
