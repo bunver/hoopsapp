@@ -12,48 +12,60 @@
     <script type="text/javascript" src="Server.js"></script>
     <script type="text/javascript" src="clustering.js"></script>
     <script>
+        var results_ped = null;
+        var results_car = null;
+        var post_threshold = 500;
         var optics = new OPTICS();
         var users = {};
-        users[1] = new ActiveUser(30, 30, 10, null, null, "minneapolis", 1);
-        users[2] = new ActiveUser(30, 33, 10, null, null, "minneapolis", 2);
-        users[3] = new ActiveUser(49, 49, 10, null, null, "minneapolis", 3);
-        users[4] = new ActiveUser(33, 33, 10, null, null, "minneapolis", 4);
-        users[5] = new ActiveUser(36, 36, 10, null, null, "minneapolis", 5);
-        users[6] = new ActiveUser(1, 1, 10, null, null, "minneapolis", 6);
-        users[7] = new ActiveUser(0, 1, 10, null, null, "minneapolis", 7);
-        users[8] = new ActiveUser(1, 0, 10, null, null, "minneapolis", 8);
-        users[9] = new ActiveUser(10, 10, 10, null, null, "minneapolis", 9);
-        users[10] = new ActiveUser(10, 13, 10, null, null, "minneapolis", 10);
-        users[11] = new ActiveUser(13, 13, 10, null, null, "minneapolis", 11);
+        users[1] = new ActiveUser(30, 30, 0, null, null, "minneapolis", 1);
+        users[2] = new ActiveUser(30, 33, 0, null, null, "minneapolis", 2);
+        users[3] = new ActiveUser(49, 49, 0, null, null, "minneapolis", 3);
+        users[4] = new ActiveUser(33, 33, 0, null, null, "minneapolis", 4);
+        users[5] = new ActiveUser(36, 36, 0, null, null, "minneapolis", 5);
+        users[6] = new ActiveUser(1, 1, 0, null, null, "minneapolis", 6);
+        users[7] = new ActiveUser(0, 1, 0, null, null, "minneapolis", 7);
+        users[8] = new ActiveUser(1, 0, 0, null, null, "minneapolis", 8);
+        users[9] = new ActiveUser(10, 10, 0, null, null, "minneapolis", 9);
+        users[10] = new ActiveUser(10, 13, 0, null, null, "minneapolis", 10);
+        users[11] = new ActiveUser(13, 13, 0, null, null, "minneapolis", 11);
 
-        var posts = {};
-        posts[1] = new Post(30, 30, "this is jason", null, 1, 1, null, 10);
-        posts[2] = new Post(30, 30, "this is jason", null, 2, 1, null, 10);
-        posts[3] = new Post(30, 30, "this is jason", null, 3, 1, null, 10);
-        posts[4] = new Post(30, 30, "this is jason", null, 4, 1, null, 10);
-        posts[5] = new Post(49, 49, "this is jason", null, 5, 1, null, 10);
-        posts[6] = new Post(10, 10, "this is jason", null, 6, 1, null, 10);
-        posts[7] = new Post(100, 100, "this is jason", null, 7, 1, null, 10);
-        posts[8] = new Post(1, 1, "this is jason", null, 1, 8, null, 10);
-        posts[9] = new Post(2, 2, "this is jason", null, 1, 9, null, 10);
+        var posts_car = {};
+        var posts_ped = {};
+        posts_ped[1] = new Post(30, 30, "this is jason", null, 1, 1, null, 0);
+        posts_ped[2] = new Post(30, 30, "this is jason", null, 2, 1, null, 0);
+        posts_ped[3] = new Post(30, 30, "this is jason", null, 3, 1, null, 0);
+        posts_ped[4] = new Post(30, 30, "this is jason", null, 4, 1, null, 0);
+        posts_ped[5] = new Post(49, 49, "this is jason", null, 5, 1, null, 0);
+        posts_ped[6] = new Post(10, 10, "this is jason", null, 6, 1, null, 0);
+        posts_ped[7] = new Post(100, 100, "this is jason", null, 7, 1, null, 0);
+        posts_ped[8] = new Post(1, 1, "this is jason", null, 1, 8, null, 0);
+        posts_ped[9] = new Post(2, 2, "this is jason", null, 1, 9, null, 0);
 
-        function getUserById(id, users){
+        function getUserById(id, users){  // this function gets the user by its id
             return users[id];
         }
 
-        function getProjectionFromUsersToSubset(users){
-            var projection = [];
+        function getProjectionFromUsersToSubset(users){  // get a subprojection from the user sets and preset for the clustering (x, y, id)
+            var projection_ped = [];
+            var projection_car = [];
             Object.keys(users).forEach(function(key) {
                 var user = users[key];
-                projection.push([user.x, user.y, user.activeID]);
+                if (user.speed > 0){
+                    projection_car.push([user.x, user.y, user.activeID]);
+                }
+                else{
+                    projection_ped.push([user.x, user.y, user.activeID]);
+                }
+                
             });
-            return projection;
+            return [projection_ped, projection_car];
         }
 
-        function populateCluster(results, tempview, users, posts){
+        // this function takes in a result from optics, a projection from users, all users, posts needed to clustify
+        function populatePedCluster(results, tempview, users, posts){  // clustering + populate posts
             var clusterlist = [];
             var count = 0;
-            for (var i = 0; i < results.length; i++){
+            for (var i = 0; i < results.length; i++){  // cluster users
                 var cluster = new Cluster(count);
                 for (var j = 0; j < results[i].length; j++){
                     var userobj = getUserById(tempview[results[i][j]][2], users);
@@ -63,14 +75,14 @@
                 clusterlist.push(cluster);
                 count++;
             }
-            Object.keys(posts).forEach(function(key) {
+            Object.keys(posts).forEach(function(key) {  // populate posts
                 var post = posts[key];
                 var acc = Math.pow(2, 30);
                 var result = null;
                 Object.keys(users).forEach(function(newkey){
                     var user = users[newkey];
                     var dis = Math.pow((post.x - user.x), 2) + Math.pow((post.y - user.y), 2);
-                    if (dis < 500){ // if distance more than this, do not consider
+                    if (dis < post_threshold){ // if distance more than this, do not consider
                         if (dis < acc){
                             acc = dis;
                             result = user;
@@ -84,11 +96,84 @@
             return clusterlist;
         }
 
+        function populateCarCluster(previous, results, tempview, users, posts){
+            var clusterlist = [];
+            var count = 0;
+            for (var i = 0; i < results.length; i++){  // cluster users
+                var cluster = new Cluster(count);
+                for (var j = 0; j < results[i].length; j++){
+                    var userobj = getUserById(tempview[results[i][j]][2], users);
+                    userobj.clusterID = count;
+                    cluster.users.push(userobj);
+                }
+                clusterlist.push(cluster);
+                count++;
+            }
+            if (previous.length != 0){ // duplicate over posts from previous cluster post
+                for (var i = 0; i < clusterlist.length; i++){
+                    var newcluster = clusterlist[i];
+                    var matchcluster = null;
+                    var acc = 0;
+                    var number_of_new_user = newcluster.users.length;
+                    for (var j = 0; j < previous.length; j++){
+                        var oldcluster = previous[j];
+                        var d = {};
+                        for (var k = 0; k < newcluster.users.length; k++){
+                            d[newcluster.users[k].id] = 0;
+                        }
+                        for (var k = 0; k < oldcluster.users.length; k++){
+                            d[oldcluster.users[k].id] = 0;
+                        }
+                        var temp = oldcluster.users.length + number_of_new_user - Object.keys(d).length;  // # of same people in the group
+                        if (temp > acc){
+                            acc = temp;
+                            matchcluster = oldcluster;
+                        }
+                    }
+                    if (matchcluster != null){
+                        for (var k = 0; k < matchcluster.posts.length; k++){
+                            newcluster.push(matchcluster.posts[k]);
+                        }
+                    }
+                }
+                previous = clusterlist;
+            }
+            return;
+            
+        }
 
-        var tempview = getProjectionFromUsersToSubset(users);
-        var results = optics.run(tempview, 10, 2);  // max distance, 2 is the minimum member
-        var finalcluster = populateCluster(results, tempview, users, posts);
-        console.log(finalcluster);
+        function addPost(post, users, car_cluster, ped_cluster, posts){ // get user id and his or her cluster ID, then update to the cluster for the post
+            var cid = getUserById(post.posterid, users).clusterID;
+            if (post.speed == 0){
+                car_cluster[cid].posts.push(post);
+            }
+            else{
+                ped_cluster[cid].posts.push(post);
+            }
+            posts.push(post);
+            return;
+        }
+
+
+        var views = [];
+        views = getProjectionFromUsersToSubset(users);
+        var view_ped = views[0];
+        var view_car = views[1];
+        console.log(view_ped);
+        console.log(view_car);
+        if (view_ped.length > 0){
+            results_ped = optics.run(view_ped, 10, 2);  // max distance, 2 is the minimum member
+            var finalcluster = populatePedCluster(results_ped, view_ped, users, posts_ped);
+            console.log(finalcluster);
+        }
+        if (view_car.length > 0){
+            results_car = optics.run(view_car, 10, 2);
+            var car_cluster = populateCarCluster();
+            console.log(car_cluster);
+        }
+
+// to do, get x, y center for cluster.
+
 
     </script>
 </head>
