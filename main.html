@@ -11,6 +11,7 @@
     <script type="text/javascript" src="Comment.js"></script>
     <script type="text/javascript" src="Server.js"></script>
     <script type="text/javascript" src="clustering.js"></script>
+    <script type="text/javascript" src="data.js"></script>
     <script>
         var results_ped = null;
         var results_car = null;
@@ -31,6 +32,7 @@
 
         var posts_car = {};
         var posts_ped = {};
+        var car_cluster = [];
         posts_ped[1] = new Post(30, 30, "this is jason", null, 1, 1, null, 0);
         posts_ped[2] = new Post(30, 30, "this is jason", null, 2, 1, null, 0);
         posts_ped[3] = new Post(30, 30, "this is jason", null, 3, 1, null, 0);
@@ -54,7 +56,7 @@
                     projection_car.push([user.x, user.y, user.activeID]);
                 }
                 else{
-                    projection_ped.push([user.x, user.y, user.activeID]);
+                    projection_ped.push([user.x, user.y, user.activeID, user.speed]);
                 }
                 
             });
@@ -96,19 +98,33 @@
             return clusterlist;
         }
 
-        function populateCarCluster(previous, results, tempview, users, posts){
+
+        // previous
+        // results
+        // tempview
+        // users
+        // posts
+        function populateCarCluster(previous, results, tempview, users, posts){ 
             var clusterlist = [];
             var count = 0;
             for (var i = 0; i < results.length; i++){  // cluster users
-                var cluster = new Cluster(count);
-                for (var j = 0; j < results[i].length; j++){
-                    var userobj = getUserById(tempview[results[i][j]][2], users);
-                    userobj.clusterID = count;
-                    cluster.users.push(userobj);
-                }
-                clusterlist.push(cluster);
-                count++;
+                var value;
+                var map = results[i];
+                Object.keys(map).forEach(function(key) {
+                    value = map[key];
+                    var cluster = new Cluster(count);
+                    for (var j = 0; j < value.length; j++){
+                        var userobj = getUserById(tempview[value[j][2]], users);
+                        userobj.clusterID = count;
+                        cluster.users.push(userobj);
+                    }
+                    clusterlist.push(cluster);
+                    count++;
+
+                });
             }
+
+            // if previous does not exist, then we do not need to worry about getting posts over
             if (previous.length != 0){ // duplicate over posts from previous cluster post
                 for (var i = 0; i < clusterlist.length; i++){
                     var newcluster = clusterlist[i];
@@ -138,7 +154,7 @@
                 }
                 previous = clusterlist;
             }
-            return;
+            return clusterlist;
             
         }
 
@@ -168,7 +184,24 @@
         }
         if (view_car.length > 0){
             results_car = optics.run(view_car, 10, 2);
-            var car_cluster = populateCarCluster();
+            var divided_cluster = [];
+            for (var i = 0; i < results_car.length; i++){
+                var subcluster = {};
+                var onegroup = results_car[i];
+                for (var j = 0; j < onegroup.length; j++){ // iterate over each optics result index
+                    if (subcluster[onegroup[j][3]] != undefined){ // already a hash key on speed
+                        subcluster[onegroup[j][3]].push(onegroup[j]);
+                    }
+                    else{
+                        subcluster[onegroup[j][3]] = [];
+                        subcluster[onegroup[j][3]].push(onegroup[j]);
+                    }
+                }
+                divided_cluster.push(subcluster);
+            }
+
+            // now the divided_cluster has first x,y optics cluster and also divided into speed cluster
+            car_cluster = populateCarCluster(car_cluster, results_car, view_car, users, posts_car);
             console.log(car_cluster);
         }
 
