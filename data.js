@@ -3719,3 +3719,9 @@ var data = [
 "datetime":"2017-05-03 18:18:14",
 "status":"1"
 }];
+
+var data_users = {};
+for (var i = 0; i < data.length; i++){
+	var cur = data[i];
+	data_users[i + 1] = new ActiveUser(cur["lat"], cur["lng"], cur["speed_avg"], null, null, null, i + 1);
+}
