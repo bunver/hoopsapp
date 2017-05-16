@@ -113,12 +113,11 @@
             for (var i = 0; i < results.length; i++){  // cluster users
                 var value;
                 var map = results[i];
-                console.log(map);
                 Object.keys(map).forEach(function(key) {
                     value = map[key];
                     var cluster = new Cluster(count);
                     for (var j = 0; j < value.length; j++){
-                        var userobj = getUserById(tempview[value[j]][2], users);
+                        var userobj = getUserById(tempview[value[j]][2], users);  // value[j] is the index in the tempview, then tempview[value[j]] gets the sub-view prototype user object from view, then [2] access the real ID
                         userobj.clusterID = count;
                         cluster.users.push(userobj);
                     }
@@ -191,8 +190,7 @@
         }
         console.log("###############\nnow car\n################################");
         if (view_car.length > 0){
-            results_car = optics.run(view_car, 1.01, 2);
-            console.log(results_car);
+            results_car = optics.run(view_car, 1.1, 2);
             var divided_cluster = [];
             for (var i = 0; i < results_car.length; i++){
                 var subcluster = {};
@@ -209,8 +207,6 @@
 
                 divided_cluster.push(subcluster);
             }
-
-            console.log(divided_cluster);
 
             // now the divided_cluster has first x,y optics cluster and also divided into speed cluster
             car_cluster = populateCarCluster(car_cluster, divided_cluster, view_car, data_users, posts_car);
