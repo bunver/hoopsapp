@@ -68,6 +68,8 @@
         function populatePedCluster(results, tempview, users, posts){  // clustering + populate posts
             var clusterlist = [];
             var count = 0;
+            console.log(results);
+            console.log(tempview);
             for (var i = 0; i < results.length; i++){  // cluster users
                 var cluster = new Cluster(count);
                 for (var j = 0; j < results[i].length; j++){
@@ -111,11 +113,12 @@
             for (var i = 0; i < results.length; i++){  // cluster users
                 var value;
                 var map = results[i];
+                console.log(map);
                 Object.keys(map).forEach(function(key) {
                     value = map[key];
                     var cluster = new Cluster(count);
                     for (var j = 0; j < value.length; j++){
-                        var userobj = getUserById(tempview[value[j][2]], users);
+                        var userobj = getUserById(tempview[value[j]][2], users);
                         userobj.clusterID = count;
                         cluster.users.push(userobj);
                     }
@@ -188,7 +191,8 @@
         }
         console.log("###############\nnow car\n################################");
         if (view_car.length > 0){
-            results_car = optics.run(view_car, 10, 2);
+            results_car = optics.run(view_car, 1.01, 2);
+            console.log(results_car);
             var divided_cluster = [];
             for (var i = 0; i < results_car.length; i++){
                 var subcluster = {};
@@ -202,8 +206,11 @@
                         subcluster[onegroup[j][3]].push(onegroup[j]);
                     }
                 }
+
                 divided_cluster.push(subcluster);
             }
+
+            console.log(divided_cluster);
 
             // now the divided_cluster has first x,y optics cluster and also divided into speed cluster
             car_cluster = populateCarCluster(car_cluster, divided_cluster, view_car, data_users, posts_car);
