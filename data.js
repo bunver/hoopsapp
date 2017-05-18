@@ -3721,7 +3721,27 @@ var data = [
 }];
 
 var data_users = {};
+var increment = 0;
 for (var i = 0; i < data.length; i++){
 	var cur = data[i];
-	data_users[i + 1] = new ActiveUser(cur["lat"], cur["lng"], cur["speed_avg"], null, null, null, i + 1);
+	data_users[increment + 1] = new ActiveUser(cur["lat"], cur["lng"], cur["speed_avg"], null, null, null, increment + 1);
+	increment++;
 }
+
+var rangever = (45.0 - 44.97);
+var rangehor = (93.24 - 93.2);
+
+for (var j = 0; j < 1000; j++){
+	data_users[increment + 1] = new ActiveUser(44.97 + rangever * Math.random(), (-93.24) + rangehor * Math.random(), 1, null, null, null, increment++);
+}
+
+
+
+
+// 44.97, -93.24
+// 45, -93.24
+// 45, -93.2
+// lower 44.97
+// higher 45
+// left 93.24
+// right 93.2
